@@ -1,0 +1,6 @@
+.DS_Store
+.venv/
+__pycache__/
+# never commit the paid journal PDF
+*journal*.pdf
+!assets/downloads/faith-and-the-stars-guide.pdf
