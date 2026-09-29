@@ -274,7 +274,7 @@ p { margin: 0 0 1em; }
 
 /* sample page */
 .sample {
-  max-width: 620px; margin: 0 auto; border-radius: 6px;
+  width: 100%; max-width: 620px; margin: 0 auto; border-radius: 6px;
   box-shadow: 0 30px 70px -30px rgba(15, 26, 51, 0.55), 0 0 0 1px #E4DAC5;
 }
 .caption { font-size: 0.9rem; color: var(--ink-soft); margin-top: 16px; }
@@ -395,3 +395,37 @@ p { margin: 0 0 1em; }
 
 .offer .mockup { width: 150px; margin: 0 auto; }
 @media (min-width: 700px) { .offer .mockup { width: 100%; } }
+
+/* ---------- combined page: journal + free guide ---------- */
+
+.hero__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.hero .btn--ghost, .section--navy .btn--ghost { color: var(--cream); }
+
+/* two covers, journal in front */
+.covers { position: relative; width: min(64vw, 300px); aspect-ratio: 800 / 1036; margin-right: 12%; }
+.covers .mockup { position: absolute; width: 82%; }
+.covers__back { top: 0; right: -22%; transform: rotate(6deg); filter: brightness(0.8); }
+.covers__front { bottom: 0; left: 0; transform: rotate(-3deg); }
+@media (min-width: 880px) { .covers { width: 380px; } .covers .mockup { width: 82%; } }
+
+.products { align-items: stretch; }
+.product { display: flex; flex-direction: column; padding: 28px; }
+.product .checklist { flex: 1; }
+.product--main { border: 2px solid var(--gold); }
+.product__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
+.product__head .eyebrow { margin-bottom: 0.4em; }
+.product__head h3 { font-size: 1.45rem; margin: 0; }
+.product__price { font-family: var(--serif); font-size: 2rem; line-height: 1; margin: 0; color: var(--ink); }
+.product__price--free {
+  font-family: var(--sans); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  background: var(--navy); color: var(--gold); padding: 8px 12px; border-radius: 999px;
+}
+.pair-note { max-width: 640px; margin: 32px auto 0; color: var(--ink-soft); font-style: italic; }
+
+.signup-success {
+  margin-top: 28px; padding: 24px; border-radius: var(--radius);
+  background: #FFFDF8; border: 1px solid #E4DAC5;
+}
+.signup-success:focus { outline: none; }
+.signup-success h3 { font-size: 1.5rem; }
+[data-offer] { margin-top: 48px; }

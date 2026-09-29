@@ -5,7 +5,7 @@ Usage (from the repo root):
     python3 -m venv .venv && .venv/bin/pip install pymupdf pillow
     .venv/bin/python tools/build_images.py "path/to/Free Guide.pdf" "path/to/Journal.pdf"
 
-Writes WebP covers and page previews, the Open Graph share image, and the
+Writes WebP covers, the journal's Day 1 sample page, the Open Graph share image, and the
 favicon PNGs into assets/img/, and copies the guide PDF into
 assets/downloads/ (the free guide is public; the paid journal PDF is never
 copied into the site).
@@ -30,18 +30,13 @@ GOLD = (201, 162, 77)
 CREAM = (246, 240, 228)
 
 # name -> (page number, output width in px)
+# Only covers (plus one journal sample page) are shown on the site; the
+# guide's inside pages stay private so the guide itself isn't given away.
 GUIDE_PAGES = {
     "guide-cover": (1, 800),
-    "guide-big-three": (5, 640),
-    "guide-signs": (6, 640),
-    "guide-planets": (12, 640),
-    "guide-moon": (13, 640),
 }
 JOURNAL_PAGES = {
     "journal-cover": (1, 800),
-    "journal-how-to": (2, 640),
-    "journal-my-cycle": (3, 640),
-    "journal-moon-signs": (4, 640),
     "journal-day-1": (6, 1100),
 }
 
@@ -79,7 +74,7 @@ def build_icons():
         print(f"  assets/img/{name}")
 
 
-def build_og(cover):
+def build_og(journal_cover, guide_cover):
     w, h = 1200, 630
     og = Image.new("RGB", (w, h), NAVY)
     draw = ImageDraw.Draw(og)
@@ -87,28 +82,35 @@ def build_og(cover):
     rnd = random.Random(7)
     for _ in range(160):
         x, y, r = rnd.randint(0, w), rnd.randint(0, h), rnd.choice([1, 1, 1, 1.5, 2])
-        if x < 660 and 180 < y < 500:  # keep the headline area clean
+        if x < 660 and 150 < y < 520:  # keep the headline area clean
             continue
         c = CREAM if rnd.random() > 0.3 else GOLD
         draw.ellipse([x - r, y - r, x + r, y + r], fill=c)
-    ch = 540
-    cw = int(cover.width * ch / cover.height)
-    c = cover.resize((cw, ch), Image.LANCZOS)
-    # thin gold keyline around the cover so it separates from the navy background
-    frame = Image.new("RGB", (cw + 4, ch + 4), GOLD)
-    frame.paste(c, (2, 2))
-    og.paste(frame, (w - cw - 90, (h - ch) // 2))
+
+    def framed(cover, ch):
+        cw = int(cover.width * ch / cover.height)
+        frame = Image.new("RGB", (cw + 4, ch + 4), GOLD)
+        frame.paste(cover.resize((cw, ch), Image.LANCZOS), (2, 2))
+        return frame
+
+    back = framed(guide_cover, 430).rotate(-6, expand=True, fillcolor=NAVY, resample=Image.BICUBIC)
+    og.paste(back, (w - back.width - 50, 40))
+    front = framed(journal_cover, 480).rotate(3, expand=True, fillcolor=NAVY, resample=Image.BICUBIC)
+    og.paste(front, (w - front.width - 230, h - front.height - 20))
+
     font_paths = ["/System/Library/Fonts/Supplemental/Georgia.ttf", "/Library/Fonts/Georgia.ttf"]
     font_path = next((p for p in font_paths if Path(p).exists()), None)
-    big = ImageFont.truetype(font_path, 58) if font_path else ImageFont.load_default()
-    small = ImageFont.truetype(font_path, 28) if font_path else ImageFont.load_default()
+    big = ImageFont.truetype(font_path, 52) if font_path else ImageFont.load_default()
+    small = ImageFont.truetype(font_path, 27) if font_path else ImageFont.load_default()
     tiny = ImageFont.truetype(font_path, 22) if font_path else ImageFont.load_default()
-    draw.text((80, 200), "FREE GUIDE", font=tiny, fill=GOLD)
-    draw.text((80, 240), "Faith & the Stars", font=big, fill=CREAM)
-    draw.text((80, 330), "Your Big Three, all 12 signs, and", font=small, fill=CREAM)
-    draw.text((80, 370), "every moon phase, paired with Scripture.", font=small, fill=CREAM)
-    draw.text((80, 450), "@faithunderthestars", font=tiny, fill=GOLD)
-    out = IMG / "og-guide.jpg"
+    draw.text((70, 170), "30-DAY JOURNAL + FREE GUIDE", font=tiny, fill=GOLD)
+    draw.text((70, 210), "Daily Scripture for", font=big, fill=CREAM)
+    draw.text((70, 272), "what's happening", font=big, fill=CREAM)
+    draw.text((70, 334), "in the stars", font=big, fill=CREAM)
+    draw.text((70, 420), "Every moon phase and zodiac season,", font=small, fill=CREAM)
+    draw.text((70, 456), "paired with God's Word.", font=small, fill=CREAM)
+    draw.text((70, 520), "@faithunderthestars", font=tiny, fill=GOLD)
+    out = IMG / "og-share.jpg"
     og.save(out, "JPEG", quality=86, optimize=True)
     print(f"  {out.relative_to(ROOT)}")
 
@@ -129,7 +131,7 @@ def main():
         save_webp(render(journal, page_no, width), name)
 
     print("Share image and icons:")
-    build_og(render(guide, 1, 800))
+    build_og(render(journal, 1, 800), render(guide, 1, 800))
     build_icons()
 
     dest = DL / "faith-and-the-stars-guide.pdf"

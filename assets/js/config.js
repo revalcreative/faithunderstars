@@ -22,7 +22,8 @@ window.FUTS_CONFIG = {
    *   On the live site it shows an error, so no signups are silently lost.
    *
    * In your email tool, set the form to: tag subscribers "guide" and send
-   * the welcome email with the guide PDF. The site handles the redirect.
+   * the welcome email with the guide PDF. Turn off the tool's own
+   * "redirect after signup": the page shows its own thank-you message.
    */
   email: {
     provider: "demo",
@@ -33,7 +34,6 @@ window.FUTS_CONFIG = {
       accountId: "",         // MailerLite embedded form HTML: .../jsonp/ACCOUNT_ID/forms/FORM_ID/subscribe
       formId: "",
     },
-    redirectTo: "/thank-you/",
   },
 
   /*

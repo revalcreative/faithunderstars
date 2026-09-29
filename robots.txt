@@ -1,4 +1,3 @@
 User-agent: *
-Disallow: /thank-you/
 Disallow: /journal-thanks/
 Sitemap: https://faithunderthestars.com/sitemap.xml

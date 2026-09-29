@@ -1,0 +1,7 @@
+{
+  "redirects": [
+    { "source": "/journal", "destination": "/", "permanent": true },
+    { "source": "/thank-you", "destination": "/", "permanent": true }
+  ],
+  "trailingSlash": true
+}

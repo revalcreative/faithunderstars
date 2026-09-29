@@ -242,10 +242,14 @@
         say("");
 
         submitToProvider(name, email).then(function () {
-          say("You're in. Taking you to your guide...", "success");
           track("guide_signup", { method: get("email.provider") }, "Lead");
-          var dest = withUtms(get("email.redirectTo") || "/thank-you/");
-          setTimeout(function () { location.href = dest; }, 700);
+          // Swap the form for the thank-you message and reveal the one-time offer
+          var success = form.parentNode.querySelector("[data-signup-success]");
+          if (!success) { say("You're in. Check your inbox for the guide.", "success"); return; }
+          form.hidden = true;
+          success.hidden = false;
+          success.focus();
+          setupOffer();
         }).catch(function (err) {
           console.error("[FUTS] signup failed", err);
           button.disabled = false;
@@ -292,13 +296,14 @@
     anchors.forEach(function (a) { io.observe(a); });
   }
 
-  // ---------- one-time offer (thank-you page) ----------
+  // ---------- one-time offer (shown after guide signup) ----------
   // The $9 price is honest "today only": it expires at midnight (visitor's
   // local time) of the day they first saw it, and does not reset on reload.
 
   function setupOffer() {
     var offer = document.querySelector("[data-offer]");
     if (!offer) return;
+    offer.hidden = false;
     var todayKey = new Date().toDateString();
     var first = getItem("localStorage", "futs_offer_day");
     if (!first) { first = todayKey; setItem("localStorage", "futs_offer_day", first); }
@@ -360,7 +365,6 @@
   setupForms();
   renderTestimonials();
   setupSticky();
-  setupOffer();
   setupPurchase();
   setupConsent();
 })();
