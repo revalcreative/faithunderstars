@@ -16,37 +16,43 @@ window.FUTS_CONFIG = {
   },
 
   /*
+   * BACKEND: the Google Apps Script web app URL (see backend/SETUP.md).
+   * It saves guide signups to your Google Sheet, emails the guide, and
+   * confirms PayPal payments. Looks like:
+   *   https://script.google.com/macros/s/LONG_ID/exec
+   */
+  backend: {
+    url: "",
+  },
+
+  /*
+   * PAYPAL: your app's Client ID (public, safe to put here). The secret key
+   * goes ONLY in the Apps Script's Script Properties, never in this file.
+   * Use the Sandbox client ID while testing, then swap in the Live one.
+   */
+  paypal: {
+    clientId: "",
+  },
+
+  /*
    * EMAIL LIST (free guide signup)
-   * provider: "kit" | "mailerlite" | "demo"
-   *   "demo" only works while previewing on your own computer (localhost).
-   *   On the live site it shows an error, so no signups are silently lost.
-   *
-   * In your email tool, set the form to: tag subscribers "guide" and send
-   * the welcome email with the guide PDF. Turn off the tool's own
-   * "redirect after signup": the page shows its own thank-you message.
+   * provider: "sheets" | "kit" | "mailerlite" | "demo"
+   *   "sheets" uses the backend above (Google Sheet + Gmail).
+   *   "demo" only works while previewing on your own computer.
+   *   Kit and MailerLite are here if you move to an email tool later.
    */
   email: {
-    provider: "demo",
+    provider: "sheets",
     kit: {
-      formId: "",            // Kit > Grow > Landing Pages & Forms > your form > the number in the URL
+      formId: "",
     },
     mailerlite: {
-      accountId: "",         // MailerLite embedded form HTML: .../jsonp/ACCOUNT_ID/forms/FORM_ID/subscribe
+      accountId: "",
       formId: "",
     },
   },
 
-  /*
-   * CHECKOUT LINKS (Stripe Payment Links, Lemon Squeezy, or Gumroad)
-   * Set each checkout's "after payment" / success URL to:
-   *   Journal $14:  https://YOURDOMAIN/journal-thanks/?p=journal
-   *   Journal $9:   https://YOURDOMAIN/journal-thanks/?p=upsell
-   */
-  checkout: {
-    journalUrl: "",          // $14 checkout link
-    journalUpsellUrl: "",    // $9 one-time-offer checkout link
-  },
-
+  // Must match PRODUCTS in backend/Code.gs (the backend sets the real price).
   prices: {
     journal: 14,
     journalUpsell: 9,
@@ -55,9 +61,8 @@ window.FUTS_CONFIG = {
 
   downloads: {
     guidePdf: "/assets/downloads/faith-and-the-stars-guide.pdf",
-    // Leave empty if your checkout tool emails the journal file (recommended).
-    // Don't put the journal PDF in this repo: anyone could download it for free.
-    journalPdf: "",
+    // The journal PDF is NOT here on purpose: this repo is public. Its Drive
+    // link lives in the backend's Script Properties (JOURNAL_URL).
   },
 
   // Bonus shown on the journal page. Update each month.

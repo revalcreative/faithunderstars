@@ -38,14 +38,6 @@
   function utms() {
     try { return JSON.parse(getItem("sessionStorage", "futs_utm") || "{}"); } catch (e) { return {}; }
   }
-  function withUtms(url) {
-    if (!url) return url;
-    var u;
-    try { u = new URL(url, location.origin); } catch (e) { return url; }
-    var saved = utms();
-    Object.keys(saved).forEach(function (k) { if (!u.searchParams.has(k)) u.searchParams.set(k, saved[k]); });
-    return u.toString();
-  }
 
   // ---------- analytics + consent ----------
 
@@ -154,35 +146,103 @@
     });
   }
 
-  // ---------- checkout buttons ----------
+  // ---------- backend (Google Apps Script) ----------
+
+  function callBackend(params) {
+    var url = get("backend.url");
+    if (!url) return Promise.reject(new Error("backend.url is not set in config.js"));
+    return fetch(url, { method: "POST", body: new URLSearchParams(params) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j || !j.ok) throw new Error((j && j.error) || "backend_error");
+        return j;
+      });
+  }
+
+  // ---------- PayPal checkout ----------
+  // Buttons render into [data-paypal="journal"] or [data-paypal="upsell"].
+  // Orders are created and confirmed by the backend, which sets the price.
+
+  var paypalReady = null;
+
+  function loadPayPal() {
+    if (paypalReady) return paypalReady;
+    paypalReady = new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = "https://www.paypal.com/sdk/js?client-id=" + encodeURIComponent(get("paypal.clientId")) +
+        "&currency=USD&intent=capture&components=buttons";
+      s.onload = function () { resolve(window.paypal); };
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    return paypalReady;
+  }
+
+  function renderPayPal(box) {
+    if (!box || box.getAttribute("data-rendered")) return;
+    box.setAttribute("data-rendered", "1");
+    var which = box.getAttribute("data-paypal");
+    var price = which === "upsell" ? get("prices.journalUpsell") : get("prices.journal");
+    var status = box.parentNode.querySelector("[data-paypal-status]");
+    function say(msg) { if (status) status.textContent = msg; }
+
+    if (!get("paypal.clientId") || !get("backend.url")) {
+      box.innerHTML = '<p class="checkout-soon">Checkout opens soon.</p>';
+      return;
+    }
+
+    loadPayPal().then(function (paypal) {
+      return paypal.Buttons({
+        style: { layout: "vertical", color: "gold", shape: "pill", label: "pay", height: 48 },
+        createOrder: function () {
+          say("");
+          track("begin_checkout", {
+            currency: "USD",
+            value: price,
+            items: [{ item_id: "journal-" + which, item_name: "Sky & Scripture Journal", price: price }],
+          }, "InitiateCheckout");
+          return callBackend({ action: "create_order", product: which }).then(function (j) { return j.id; });
+        },
+        onApprove: function (data) {
+          say("Confirming your payment...");
+          return callBackend({ action: "capture_order", order_id: data.orderID }).then(function (j) {
+            setItem("sessionStorage", "futs_download", j.downloadUrl || "");
+            location.href = "/journal-thanks/?p=" + encodeURIComponent(j.product || which) +
+              "&order_id=" + encodeURIComponent(data.orderID);
+          }).catch(function (err) {
+            console.error("[FUTS] capture failed", err);
+            say("Your payment didn't go through. Please try again, or email us and we'll help.");
+          });
+        },
+        onError: function (err) {
+          console.error("[FUTS] PayPal error", err);
+          say("Checkout couldn't open. Please try again in a moment.");
+        },
+      }).render(box);
+    }).catch(function (err) {
+      console.error("[FUTS] PayPal failed to load", err);
+      box.innerHTML = '<p class="checkout-soon">Checkout couldn’t load. Please refresh and try again.</p>';
+    });
+  }
 
   function setupCheckout() {
-    $all("[data-checkout]").forEach(function (el) {
-      var which = el.getAttribute("data-checkout");
-      var url = which === "upsell" ? get("checkout.journalUpsellUrl") : get("checkout.journalUrl");
-      var price = which === "upsell" ? get("prices.journalUpsell") : get("prices.journal");
-      if (url) el.setAttribute("href", withUtms(url));
-
-      el.addEventListener("click", function (e) {
-        if (!url) {
-          e.preventDefault();
-          alert("Checkout isn't connected yet. Add your checkout link in assets/js/config.js.");
-          return;
-        }
-        track("begin_checkout", {
-          currency: get("prices.currency") || "USD",
-          value: price,
-          items: [{ item_id: "journal-" + which, item_name: "Sky & Scripture Journal", price: price }],
-        }, "InitiateCheckout");
-      });
-    });
+    // The main journal buttons render when the page loads; the $9 offer's
+    // buttons render when the offer is revealed (see setupOffer).
+    $all('[data-paypal="journal"]').forEach(renderPayPal);
   }
 
   // ---------- email signup ----------
 
-  function submitToProvider(firstName, email) {
+  function submitToProvider(firstName, email, trap) {
     var p = get("email.provider");
     var fd = new FormData();
+
+    if (p === "sheets" && !(isLocal && !get("backend.url"))) {
+      var params = { action: "signup", first_name: firstName, email: email, company: trap || "" };
+      var saved = utms();
+      Object.keys(saved).forEach(function (k) { params[k] = saved[k]; });
+      return callBackend(params);
+    }
 
     if (p === "kit") {
       fd.append("email_address", email);
@@ -204,7 +264,7 @@
         .then(function (j) { if (!j || !j.success) throw new Error("mailerlite"); });
     }
 
-    if (p === "demo" && isLocal) {
+    if ((p === "demo" || p === "sheets") && isLocal) {
       console.warn("[FUTS] Demo signup, not sent anywhere:", firstName, email);
       return new Promise(function (res) { setTimeout(res, 600); });
     }
@@ -241,7 +301,8 @@
         button.textContent = "Sending...";
         say("");
 
-        submitToProvider(name, email).then(function () {
+        var trap = form.elements.company ? form.elements.company.value : "";
+        submitToProvider(name, email, trap).then(function () {
           track("guide_signup", { method: get("email.provider") }, "Lead");
           // Swap the form for the thank-you message and reveal the one-time offer
           var success = form.parentNode.querySelector("[data-signup-success]");
@@ -321,6 +382,7 @@
         expired.hidden = false;
         return;
       }
+      renderPayPal(offer.querySelector('[data-paypal="upsell"]'));
       var h = Math.floor(ms / 3600000);
       var m = Math.floor((ms % 3600000) / 60000);
       countdown.textContent = "This price ends tonight at midnight (" +
@@ -349,9 +411,11 @@
         items: [{ item_id: "journal-" + which, item_name: "Sky & Scripture Journal", price: price }],
       }, "Purchase");
     }
+    // The download link comes back from the backend after PayPal confirms payment
+    var link = getItem("sessionStorage", "futs_download");
     var dl = document.querySelector("[data-journal-download]");
-    if (dl && get("downloads.journalPdf")) {
-      dl.querySelector("a").setAttribute("href", get("downloads.journalPdf"));
+    if (dl && link) {
+      dl.querySelector("a").setAttribute("href", link);
       dl.hidden = false;
     }
   }

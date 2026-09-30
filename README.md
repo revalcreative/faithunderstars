@@ -20,38 +20,32 @@ This is a plain static site with no build step, so it can go straight to Netlify
 python3 -m http.server 8787
 ```
 
-Then open http://localhost:8787. While `email.provider` is `"demo"`, signups work locally without sending anything. On the live site, demo mode shows an error instead, so leads are never silently lost.
+Then open http://localhost:8787. On your own computer, signups are simulated until `backend.url` is set, so nothing gets sent while you test. On the live site, demo mode shows an error instead, so leads are never silently lost.
 
 Old `/journal` and `/thank-you` links redirect to the home page.
 
 ## Launch checklist
 
-1. **Email (Kit or MailerLite)**
-   - Create a form, set it to tag subscribers `guide`, and set the welcome email to include the guide PDF.
-   - In `config.js`, set `email.provider` to `"kit"` or `"mailerlite"` and fill in the IDs.
-   - Turn off the provider's own "redirect after signup" (the page shows its own thank-you).
-2. **Checkout (Stripe Payment Links, Lemon Squeezy, or Gumroad)**
-   - Create two products: Journal $14 and Journal $9 (upsell). Upload the journal PDF to the checkout tool so it delivers the file.
-   - Set the after-payment URLs:
-     - $14: `https://faithunderthestars.com/journal-thanks/?p=journal`
-     - $9: `https://faithunderthestars.com/journal-thanks/?p=upsell`
-     - Stripe only: add `&session_id={CHECKOUT_SESSION_ID}` so purchases aren't double-counted.
-   - Paste both checkout links into `config.js`.
-   - Add buyers to your email list tagged `journal-buyer` using the checkout tool's Kit/MailerLite integration or Zapier.
-3. **Tracking.** Paste your GA4 ID and Meta Pixel ID into `config.js`. A cookie banner then appears automatically, and nothing loads until a visitor accepts. Events sent:
+1. **Guide signups and journal checkout.** Follow [`backend/SETUP.md`](backend/SETUP.md):
+   - A Google Sheet saves every guide signup and order.
+   - Gmail sends the guide and the journal download link.
+   - PayPal takes payment by PayPal account or card.
+   - Put the web app URL in `config.js` as `backend.url`, and the PayPal **Client ID** as `paypal.clientId`. The PayPal **secret** and the journal PDF link live only in the script's settings, never in this public repo.
+2. **Tracking.** Paste your GA4 ID and Meta Pixel ID into `config.js`. A cookie banner then appears automatically, and nothing loads until a visitor accepts. Events sent:
 
    | Moment | GA4 | Meta |
    |---|---|---|
    | Guide signup | `guide_signup` | `Lead` |
-   | Buy button click | `begin_checkout` | `InitiateCheckout` |
-   | Confirmation page | `purchase` | `Purchase` |
+   | PayPal checkout opened | `begin_checkout` | `InitiateCheckout` |
+   | Payment confirmed | `purchase` | `Purchase` |
 
    In GA4, mark `guide_signup` and `purchase` as key events.
-4. **Legal.** Fill in the bracketed items in `/privacy/` and `/terms/`, then delete the yellow "Draft for review" notes.
-5. **Monthly upkeep.** Add upcoming New Moon dates to `newMoons` and update `bonus`.
-6. **Deploy.** Connect this repo in Netlify, Vercel, or Cloudflare Pages with no build command and publish directory `.`, then add your custom domain. If the domain isn't `faithunderthestars.com`, find and replace it in the HTML files, `robots.txt`, and `sitemap.xml`.
+3. **Legal.** Fill in the bracketed items in `/privacy/` and `/terms/`, then delete the yellow "Draft for review" notes.
+4. **Monthly upkeep.** Add upcoming New Moon dates to `newMoons`, update `bonus`, and swap the bonus Drive link (`BONUS_URL`) in the script's settings.
 
-UTM parameters on your Instagram links (for example `?utm_source=instagram&utm_medium=bio`) are carried through to the checkout links automatically.
+## Hosting
+
+The site is served by **GitHub Pages** from the `main` branch. The `CNAME` file points it at faithunderthestars.com, with DNS at Namecheap. Every push to `main` goes live in a minute or two. The `netlify.toml`, `vercel.json`, and `_redirects` files are only used if you ever move to one of those hosts.
 
 ## Updating images from new Canva exports
 

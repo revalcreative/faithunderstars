@@ -429,3 +429,15 @@ p { margin: 0 0 1em; }
 .signup-success:focus { outline: none; }
 .signup-success h3 { font-size: 1.5rem; }
 [data-offer] { margin-top: 48px; }
+
+/* ---------- PayPal checkout ---------- */
+.paypal-box { min-height: 56px; margin-top: 8px; position: relative; z-index: 0; }
+.price-card .paypal-box { background: #FFFDF8; border-radius: 14px; padding: 16px 16px 4px; }
+.offer .paypal-box { max-width: 360px; }
+.checkout-status { min-height: 1.4em; margin: 8px 0 0; font-weight: 700; font-size: 0.95rem; }
+.section--navy .checkout-status { color: var(--error-on-navy); }
+.offer .checkout-status { color: var(--error); }
+.checkout-soon { margin: 0 0 12px; padding: 14px; text-align: center; color: var(--ink-soft); font-weight: 700; }
+
+/* spam trap: hidden from people, visible to bots */
+.trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }

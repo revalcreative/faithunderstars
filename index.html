@@ -51,7 +51,7 @@
           <h1 id="hero-title">Daily Scripture for What's Happening in the Stars</h1>
           <p class="lede">A 30-day journal that pairs every moon phase and zodiac season with God's Word, plus a free companion guide to go with it.</p>
           <div class="hero__actions">
-            <a class="btn" href="#price" data-checkout="journal" data-sticky-hide>Get the Journal &ndash;&nbsp;<span data-price="journal">$14</span></a>
+            <a class="btn" href="#price" data-sticky-hide>Get the Journal &ndash;&nbsp;<span data-price="journal">$14</span></a>
             <a class="btn btn--ghost" href="#free-guide">Get the free guide</a>
           </div>
           <p class="form__note" style="margin-top:14px">Instant download. Print it or use it on your tablet.</p>
@@ -105,7 +105,7 @@
               <li><strong>"My Cycle" page</strong> for your Big Three and this month's transits</li>
               <li><strong>Printable PDF,</strong> or use it on a tablet (GoodNotes and similar apps)</li>
             </ul>
-            <a class="btn btn--block" href="#price" data-checkout="journal">Get the Journal &ndash;&nbsp;<span data-price="journal">$14</span></a>
+            <a class="btn btn--block" href="#price">Get the Journal &ndash;&nbsp;<span data-price="journal">$14</span></a>
           </article>
           <article class="card product" id="guide-contents">
             <div class="product__head">
@@ -197,7 +197,9 @@
             <strong>Bonus included</strong>
             <span data-cfg-text="bonus">October Sky &amp; Scripture calendar</span>
           </div>
-          <a class="btn btn--block" href="#price" data-checkout="journal" data-sticky-hide>Get the Journal &ndash;&nbsp;<span data-price="journal">$14</span></a>
+          <div class="paypal-box" data-paypal="journal" data-sticky-hide></div>
+          <p class="checkout-status" data-paypal-status role="status" aria-live="polite"></p>
+          <p class="muted" style="margin:8px 0 0;font-size:0.9rem">Secure checkout with PayPal. Pay with your PayPal account or any debit or credit card. Your download link is emailed to you and shown right after payment.</p>
           <p class="muted" style="margin:16px 0 0;font-size:0.95rem">Pairs with the free <a class="text-link" href="#free-guide">Faith &amp; the Stars guide</a>.</p>
         </div>
       </div>
@@ -222,6 +224,7 @@
               <label for="guide-email">Email</label>
               <input id="guide-email" name="email" type="email" inputmode="email" autocomplete="email" required>
             </div>
+            <div class="trap" aria-hidden="true"><label for="guide-company">Company</label><input id="guide-company" name="company" type="text" tabindex="-1" autocomplete="off"></div>
             <button class="btn btn--block" type="submit">Send Me the Guide</button>
             <p class="form__status" role="status" aria-live="polite"></p>
             <p class="form__note">Free, 16 pages. Unsubscribe anytime.</p>
@@ -244,12 +247,13 @@
             <div data-offer-active>
               <p>Get the <strong>Sky &amp; Scripture Journal</strong> to go with your guide for <span data-price="journalUpsell">$9</span>, today only.</p>
               <p class="offer__price"><s data-price="journal">$14</s> <strong data-price="journalUpsell">$9</strong></p>
-              <a class="btn" href="#price" data-checkout="upsell">Yes, I want the journal for&nbsp;<span data-price="journalUpsell">$9</span></a>
+              <div class="paypal-box" data-paypal="upsell"></div>
+              <p class="checkout-status" data-paypal-status role="status" aria-live="polite"></p>
               <p class="countdown" data-offer-countdown>This price ends tonight at midnight.</p>
             </div>
             <div data-offer-expired hidden>
               <p>This one-day price has ended, but the journal is always available.</p>
-              <a class="btn" href="#price" data-checkout="journal">Get the Journal &ndash;&nbsp;<span data-price="journal">$14</span></a>
+              <a class="btn" href="#price">Get the Journal &ndash;&nbsp;<span data-price="journal">$14</span></a>
             </div>
           </div>
         </div>
@@ -302,7 +306,7 @@
         <h2 id="final-title">The next New Moon is <span data-new-moon>Saturday, October 10</span>. Start your cycle with us.</h2>
         <hr class="rule">
         <div class="hero__actions" style="justify-content:center">
-          <a class="btn" href="#price" data-checkout="journal" data-sticky-hide>Get the Journal &ndash;&nbsp;<span data-price="journal">$14</span></a>
+          <a class="btn" href="#price" data-sticky-hide>Get the Journal &ndash;&nbsp;<span data-price="journal">$14</span></a>
           <a class="btn btn--ghost" href="#free-guide">Get the free guide</a>
         </div>
       </div>
@@ -310,7 +314,7 @@
   </main>
 
   <div class="sticky-buy">
-    <a class="btn btn--block" href="#price" data-checkout="journal">Get the Journal &ndash;&nbsp;<span data-price="journal">$14</span></a>
+    <a class="btn btn--block" href="#price">Get the Journal &ndash;&nbsp;<span data-price="journal">$14</span></a>
   </div>
 
   <footer class="site-footer">
